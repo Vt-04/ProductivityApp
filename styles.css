@@ -1914,4 +1914,9 @@ body {
     min-height: 580px;
 }
 
+/* --- Utility Classes --- */
+.hidden {
+    display: none !important;
+}
+
 
