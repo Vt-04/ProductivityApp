@@ -368,7 +368,7 @@ body {
 .main-grid {
     display: grid;
     grid-auto-rows: minmax(220px, auto);
-    gap: clamp(1rem, 2vw, 1.5rem);
+    gap: clamp(1rem, 1.5vw, 1.5rem);
     width: 100%;
     max-width: 130rem;
     padding: 0 1.5rem;
@@ -404,6 +404,19 @@ body {
 .main-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 68rem; }
 .main-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 68rem; }
 .main-grid.cols-1 { grid-template-columns: minmax(0, 1fr); max-width: 34rem; }
+
+/* Desktop Viewport-Fitting Dynamic Scaling */
+@media (min-width: 1024px) {
+    .main-grid {
+        height: calc(100vh - 9rem);
+        grid-template-rows: repeat(3, 1fr);
+        grid-auto-rows: 1fr;
+        margin-bottom: 1rem;
+    }
+    .bento-small, .bento-tall, .bento-wide, .bento-large {
+        min-height: 0 !important;
+    }
+}
 
 /* Grid columns responsiveness fallback if classes are not set */
 @media (max-width: 1280px) {
@@ -726,7 +739,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    max-height: 250px;
+    flex-grow: 1;
+    height: 0;
+    min-height: 120px;
     overflow-y: auto;
     padding-right: 0.25rem;
 }
@@ -1132,8 +1147,9 @@ body {
 }
 
 #productivity-chart {
-    max-width: 100%;
-    max-height: 160px;
+    width: 100%;
+    height: 100%;
+    max-height: 180px;
 }
 
 /* --- Weather Widget Panel --- */
