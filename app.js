@@ -341,33 +341,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Enable HTML5 Drag & Drop
     const cards = grid.querySelectorAll('.module-card');
-    let isDraggingFromHandle = false;
-
-    // Track mousedown on handles to distinguish valid drag starts
-    grid.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.drag-handle')) {
-            isDraggingFromHandle = true;
-        }
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDraggingFromHandle = false;
-    });
     
     cards.forEach(card => {
-        card.addEventListener('dragstart', (e) => {
-            // Cancel drag start if it did not originate from the handle
-            if (!isDraggingFromHandle) {
-                e.preventDefault();
-                return;
-            }
+        card.setAttribute('draggable', 'false'); // Disable card-level drag
+        const handle = card.querySelector('.drag-handle');
+        handle.setAttribute('draggable', 'true'); // Make handle itself draggable
+        
+        handle.addEventListener('dragstart', (e) => {
             card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+            
+            // Set the drag image to be the entire card, matching mouse click offsets
+            if (e.dataTransfer.setDragImage) {
+                const rect = card.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+                e.dataTransfer.setDragImage(card, offsetX, offsetY);
+            }
         });
 
-        card.addEventListener('dragend', () => {
+        handle.addEventListener('dragend', () => {
             card.classList.remove('dragging');
-            isDraggingFromHandle = false;
             saveLayoutOrder();
         });
     });
