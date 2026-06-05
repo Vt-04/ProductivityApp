@@ -132,12 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FLIP Transition Helper ---
     function executeWithTransition(actionFn) {
-        // 1. Get initial positions of all visible items in the grid, including placeholders
-        const items = [...grid.querySelectorAll('.module-card, .drag-placeholder')];
+        // 1. Get initial positions of all visible cards (excluding the one being dragged)
+        const items = [...grid.querySelectorAll('.module-card:not(.dragging)')];
         const firstRects = new Map();
         items.forEach(item => {
             if (item.style.display !== 'none') {
-                firstRects.set(item.id || item.className, item.getBoundingClientRect());
+                firstRects.set(item.id, item.getBoundingClientRect());
             }
         });
 
@@ -148,14 +148,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastRects = new Map();
         items.forEach(item => {
             if (item.style.display !== 'none') {
-                lastRects.set(item.id || item.className, item.getBoundingClientRect());
+                lastRects.set(item.id, item.getBoundingClientRect());
             }
         });
 
         // 4. Invert and play
         items.forEach(item => {
             if (item.style.display === 'none') return;
-            const key = item.id || item.className;
+            const key = item.id;
             const first = firstRects.get(key);
             const last = lastRects.get(key);
 
@@ -299,8 +299,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Drag & Drop Reordering ---
-    let dragPlaceholder = null;
-
     function saveLayoutOrder() {
         const cards = [...grid.querySelectorAll('.module-card')];
         const order = cards.map(c => c.getAttribute('data-id'));
@@ -341,28 +339,11 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('dragstart', (e) => {
             card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
-            
-            // Create placeholder
-            dragPlaceholder = document.createElement('div');
-            dragPlaceholder.className = 'drag-placeholder';
-            dragPlaceholder.style.height = `${card.offsetHeight}px`;
-            
-            // Wait a tick before hiding the original card so the browser can paint the drag image
-            setTimeout(() => {
-                card.parentNode.insertBefore(dragPlaceholder, card);
-                card.style.display = 'none';
-            }, 0);
         });
 
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
-            card.style.display = 'flex';
             card.setAttribute('draggable', 'false');
-            if (dragPlaceholder && dragPlaceholder.parentNode) {
-                dragPlaceholder.parentNode.insertBefore(card, dragPlaceholder);
-                dragPlaceholder.remove();
-            }
-            dragPlaceholder = null;
             saveLayoutOrder();
         });
     });
@@ -371,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.addEventListener('dragover', (e) => {
         e.preventDefault();
         const draggingCard = grid.querySelector('.dragging');
-        if (!draggingCard || !dragPlaceholder) return;
+        if (!draggingCard) return;
 
         const otherCards = [...grid.querySelectorAll('.module-card:not(.dragging)')];
         
@@ -400,9 +381,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const targetSibling = isAfter ? closestCard.element.nextSibling : closestCard.element;
             
-            if (dragPlaceholder.nextSibling !== targetSibling) {
+            if (draggingCard.nextSibling !== targetSibling) {
                 executeWithTransition(() => {
-                    grid.insertBefore(dragPlaceholder, targetSibling);
+                    grid.insertBefore(draggingCard, targetSibling);
                 });
             }
         }
