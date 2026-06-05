@@ -10,8 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const weatherLoc = document.getElementById('weather-location');
     const weatherIconContainer = document.getElementById('weather-icon-container');
     const btnWeatherUnit = document.getElementById('btn-weather-unit');
+    const weatherInfo = document.getElementById('weather-info');
+    const weatherSearchDrawer = document.getElementById('weather-search-drawer');
+    const weatherSearchInput = document.getElementById('weather-search-input');
+    const btnSearchToggle = document.getElementById('btn-weather-search-toggle');
+    const btnSearchCancel = document.getElementById('btn-weather-search-cancel');
+    const btnSearch = document.getElementById('btn-weather-search');
+    const btnWeatherGps = document.getElementById('btn-weather-gps');
 
     // --- State and Config ---
+
     let currentTempC = null;
     let currentUnit = localStorage.getItem('tacticalDashboardWeatherUnit') || 'C';
 
@@ -150,6 +158,44 @@ document.addEventListener('DOMContentLoaded', () => {
         weatherIconContainer.style.color = 'var(--accent-red)';
         weatherIconContainer.style.textShadow = '0 0 12px rgba(239, 68, 68, 0.3)';
     }
+
+    async function searchCity(cityName) {
+        if (!cityName) return;
+        
+        try {
+            weatherCond.textContent = 'Searching...';
+            const response = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`);
+            if (!response.ok) throw new Error('Geocoding failed');
+            const data = await response.json();
+            
+            if (!data.results || data.results.length === 0) {
+                weatherCond.textContent = 'Not Found';
+                return;
+            }
+
+            const result = data.results[0];
+            const lat = result.latitude;
+            const lon = result.longitude;
+            
+            // Format dynamic location display name
+            const stateOrCountry = result.admin1 || result.country || '';
+            const locationLabel = stateOrCountry ? `${result.name}, ${stateOrCountry}` : result.name;
+
+            // Get weather
+            getWeatherData(lat, lon, locationLabel);
+
+            // Hide search drawer
+            weatherSearchDrawer.classList.add('hidden');
+            weatherInfo.classList.remove('hidden');
+            
+            // Show GPS/restore button so the user can easily toggle back to auto-location
+            btnWeatherGps.classList.remove('hidden');
+        } catch (e) {
+            console.error("Geocoding failed: ", e);
+            weatherCond.textContent = 'Search Error';
+        }
+    }
+
 
 
 
@@ -374,6 +420,48 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Toggle Weather Search Drawer
+    if (btnSearchToggle) {
+        btnSearchToggle.addEventListener('click', () => {
+            weatherInfo.classList.add('hidden');
+            weatherSearchDrawer.classList.remove('hidden');
+            weatherSearchInput.focus();
+        });
+    }
+
+    // Cancel Weather Search
+    if (btnSearchCancel) {
+        btnSearchCancel.addEventListener('click', () => {
+            weatherSearchDrawer.classList.add('hidden');
+            weatherInfo.classList.remove('hidden');
+            weatherSearchInput.value = '';
+        });
+    }
+
+    // Submit Weather Search (Click)
+    if (btnSearch) {
+        btnSearch.addEventListener('click', () => {
+            searchCity(weatherSearchInput.value.trim());
+        });
+    }
+
+    // Submit Weather Search (Enter Key)
+    if (weatherSearchInput) {
+        weatherSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchCity(weatherSearchInput.value.trim());
+            }
+        });
+    }
+
+    // Restore GPS Auto Location
+    if (btnWeatherGps) {
+        btnWeatherGps.addEventListener('click', () => {
+            btnWeatherGps.classList.add('hidden');
+            fetchWeather();
+        });
+    }
+
     // Initial Render calls
     updateStatsPanel();
     fetchWeather();
@@ -382,5 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh weather every 30 minutes
     setInterval(fetchWeather, 30 * 60 * 1000);
 });
+
 
 

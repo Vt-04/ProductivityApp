@@ -244,20 +244,34 @@
 
                 <!-- Weather Widget Section -->
                 <div class="weather-panel">
-                    <div class="weather-info">
+                    <!-- Standard Weather Info display -->
+                    <div id="weather-info" class="weather-info">
                         <div class="weather-temp-container">
                             <span id="weather-temp" class="weather-temp">--</span>
                             <button id="btn-weather-unit" class="btn-unit" title="Toggle °C / °F">°C</button>
                         </div>
                         <div class="weather-meta">
                             <span id="weather-cond" class="weather-cond">Loading...</span>
-                            <span id="weather-location" class="weather-location">Detecting...</span>
+                            <div class="weather-loc-row">
+                                <span id="weather-location" class="weather-location">Detecting...</span>
+                                <button id="btn-weather-search-toggle" class="btn-weather-icon-action" title="Search city"><i class="fa-solid fa-magnifying-glass"></i></button>
+                                <button id="btn-weather-gps" class="btn-weather-icon-action hidden" title="Use current location"><i class="fa-solid fa-location-crosshairs"></i></button>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Weather Search Input Drawer (Hidden by default) -->
+                    <div id="weather-search-drawer" class="weather-search-drawer hidden">
+                        <input type="text" id="weather-search-input" class="input-field weather-search-field" placeholder="Search city...">
+                        <button id="btn-weather-search" class="btn-icon-sm" title="Search"><i class="fa-solid fa-arrow-right"></i></button>
+                        <button id="btn-weather-search-cancel" class="btn-weather-icon-action" title="Cancel"><i class="fa-solid fa-times"></i></button>
+                    </div>
+
                     <div id="weather-icon-container" class="weather-icon">
                         <i class="fa-solid fa-cloud-sun"></i>
                     </div>
                 </div>
+
 
 
 
