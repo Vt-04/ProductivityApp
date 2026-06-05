@@ -25,6 +25,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const USERNAME_KEY = 'tacticalDashboardUsername';
     const USERID_KEY = 'tacticalDashboardUserId';
 
+    // Default Firebase Config (Hardcoded fallback for zero-setup co-working!)
+    const DEFAULT_FIREBASE_CONFIG = {
+        apiKey: "AIzaSyDcKgTG6wg99zRgDlaxbvwpnZSoYr_v1Bo",
+        databaseURL: "https://tactical-hud-1e12f-default-rtdb.firebaseio.com",
+        projectId: "tactical-hud-1e12f",
+        authDomain: "tactical-hud-1e12f.firebaseapp.com"
+    };
+
     // State Variables
     let database = null;
     let username = localStorage.getItem(USERNAME_KEY) || `Agent-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -264,14 +272,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Bootstrapping: Auto-connect on startup if config is saved
+    // Bootstrapping: Auto-connect on startup using saved config or fallback default
+    let activeConfig = null;
     const savedConfig = localStorage.getItem(CONFIG_KEY);
     if (savedConfig) {
         try {
-            const config = JSON.parse(savedConfig);
-            initFirebase(config);
+            activeConfig = JSON.parse(savedConfig);
         } catch (e) {
             localStorage.removeItem(CONFIG_KEY);
         }
+    }
+
+    if (!activeConfig && DEFAULT_FIREBASE_CONFIG && DEFAULT_FIREBASE_CONFIG.apiKey) {
+        activeConfig = DEFAULT_FIREBASE_CONFIG;
+    }
+
+    if (activeConfig) {
+        initFirebase(activeConfig);
     }
 });
