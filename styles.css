@@ -356,33 +356,33 @@ body {
 /* --- Main Grid System --- */
 .main-grid {
     display: grid;
-    gap: 2rem;
+    gap: clamp(1rem, 2vw, 2rem);
     width: 100%;
-    max-width: 120rem;
+    max-width: 130rem;
     padding: 0 1.5rem;
     margin-bottom: 2rem;
     transition: all var(--transition-slow);
 }
 
 /* Grid Layout classes managed by JS */
-.main-grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: 145rem; }
-.main-grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.main-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 96rem; }
-.main-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 68rem; }
-.main-grid.cols-1 { grid-template-columns: minmax(0, 1fr); max-width: 34rem; }
+.main-grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); max-width: 130rem; }
+.main-grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 105rem; }
+.main-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 80rem; }
+.main-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 54rem; }
+.main-grid.cols-1 { grid-template-columns: minmax(0, 1fr); max-width: 28rem; }
 
 /* Grid columns responsiveness fallback if classes are not set */
 @media (max-width: 1600px) {
-    .main-grid.cols-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .main-grid.cols-5 { grid-template-columns: repeat(3, minmax(0, 1fr)); max-width: 80rem; }
 }
 @media (max-width: 1280px) {
-    .main-grid.cols-5, .main-grid.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .main-grid.cols-5, .main-grid.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 54rem; }
 }
 @media (max-width: 900px) {
-    .main-grid.cols-5, .main-grid.cols-4, .main-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .main-grid.cols-5, .main-grid.cols-4, .main-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 54rem; }
 }
 @media (max-width: 640px) {
-    .main-grid.cols-5, .main-grid.cols-4, .main-grid.cols-3, .main-grid.cols-2 { grid-template-columns: minmax(0, 1fr); }
+    .main-grid.cols-5, .main-grid.cols-4, .main-grid.cols-3, .main-grid.cols-2 { grid-template-columns: minmax(0, 1fr); max-width: 28rem; }
 }
 
 
@@ -435,16 +435,32 @@ body {
 
 /* Drag & Drop Visuals */
 .module-card.dragging {
-    opacity: 0.3;
-    border: 2px dashed rgba(255, 255, 255, 0.25);
-    background: transparent;
-    box-shadow: none;
-    transform: scale(0.96);
+    opacity: 0.05;
+    pointer-events: none;
 }
 
-.drag-over {
-    border: 2px dashed rgba(255, 255, 255, 0.35);
+.drag-placeholder {
+    border: 2px dashed var(--accent-blue);
+    background: hsla(223, 47%, 12%, 0.3);
+    border-radius: 2rem;
+    min-height: 480px;
+    box-shadow: inset 0 0 20px var(--glow-blue);
+    position: relative;
+    pointer-events: none;
+    animation: placeholder-glow 2s infinite alternate;
 }
+
+@keyframes placeholder-glow {
+    0% {
+        border-color: color-mix(in srgb, var(--accent-blue) 40%, transparent);
+        box-shadow: inset 0 0 10px var(--glow-blue);
+    }
+    100% {
+        border-color: var(--accent-blue);
+        box-shadow: inset 0 0 25px var(--glow-blue);
+    }
+}
+
 
 /* Card Header Panel */
 .card-controls {

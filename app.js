@@ -130,6 +130,63 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(savedTheme);
 
 
+    // --- FLIP Transition Helper ---
+    function executeWithTransition(actionFn) {
+        // 1. Get initial positions of all visible items in the grid, including placeholders
+        const items = [...grid.querySelectorAll('.module-card, .drag-placeholder')];
+        const firstRects = new Map();
+        items.forEach(item => {
+            if (item.style.display !== 'none') {
+                firstRects.set(item.id || item.className, item.getBoundingClientRect());
+            }
+        });
+
+        // 2. Execute DOM updates
+        actionFn();
+
+        // 3. Get new positions of items
+        const lastRects = new Map();
+        items.forEach(item => {
+            if (item.style.display !== 'none') {
+                lastRects.set(item.id || item.className, item.getBoundingClientRect());
+            }
+        });
+
+        // 4. Invert and play
+        items.forEach(item => {
+            if (item.style.display === 'none') return;
+            const key = item.id || item.className;
+            const first = firstRects.get(key);
+            const last = lastRects.get(key);
+
+            if (first && last) {
+                const deltaX = first.left - last.left;
+                const deltaY = first.top - last.top;
+
+                if (deltaX !== 0 || deltaY !== 0) {
+                    item.style.transition = 'none';
+                    item.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+                    // Force reflow
+                    item.offsetHeight;
+
+                    item.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    item.style.transform = 'translate(0, 0)';
+
+                    // Clear inline transitions safely preventing overlapping timer conflicts
+                    if (item._flipTimeout) {
+                        clearTimeout(item._flipTimeout);
+                    }
+                    item._flipTimeout = setTimeout(() => {
+                        item.style.transition = '';
+                        item.style.transform = '';
+                        item._flipTimeout = null;
+                    }, 400);
+                }
+            }
+        });
+    }
+
     // --- Grid Layout & Column Management ---
     function updateGridColumns() {
         const visibleCount = 5 - minimizedModules.size;
@@ -195,12 +252,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         card.classList.add('minimizing');
         setTimeout(() => {
-            card.style.display = 'none';
-            card.classList.remove('minimizing');
-            minimizedModules.add(id);
-            saveMinimizedState();
-            renderRestoreDock();
-            updateGridColumns();
+            executeWithTransition(() => {
+                card.style.display = 'none';
+                card.classList.remove('minimizing');
+                minimizedModules.add(id);
+                saveMinimizedState();
+                renderRestoreDock();
+                updateGridColumns();
+            });
         }, 300); // matches CSS transition duration
     }
 
@@ -208,17 +267,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.getElementById(`${id}-module`);
         if (!card) return;
         
-        card.style.display = 'flex';
-        card.classList.add('minimizing'); // starts small / scale(0.6)
+        executeWithTransition(() => {
+            card.style.display = 'flex';
+            card.classList.add('minimizing'); // starts small / scale(0.6)
+            minimizedModules.delete(id);
+            saveMinimizedState();
+            renderRestoreDock();
+            updateGridColumns();
+        });
         
         // Force reflow
-        card.offsetHeight;
-        card.classList.remove('minimizing'); // scales up to full size
-        
-        minimizedModules.delete(id);
-        saveMinimizedState();
-        renderRestoreDock();
-        updateGridColumns();
+        setTimeout(() => {
+            card.classList.remove('minimizing');
+        }, 50);
     }
 
     // Hook up Minimize buttons
@@ -238,6 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- Drag & Drop Reordering ---
+    let dragPlaceholder = null;
+
     function saveLayoutOrder() {
         const cards = [...grid.querySelectorAll('.module-card')];
         const order = cards.map(c => c.getAttribute('data-id'));
@@ -278,11 +341,28 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('dragstart', (e) => {
             card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
+            
+            // Create placeholder
+            dragPlaceholder = document.createElement('div');
+            dragPlaceholder.className = 'drag-placeholder';
+            dragPlaceholder.style.height = `${card.offsetHeight}px`;
+            
+            // Wait a tick before hiding the original card so the browser can paint the drag image
+            setTimeout(() => {
+                card.parentNode.insertBefore(dragPlaceholder, card);
+                card.style.display = 'none';
+            }, 0);
         });
 
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
+            card.style.display = 'flex';
             card.setAttribute('draggable', 'false');
+            if (dragPlaceholder && dragPlaceholder.parentNode) {
+                dragPlaceholder.parentNode.insertBefore(card, dragPlaceholder);
+                dragPlaceholder.remove();
+            }
+            dragPlaceholder = null;
             saveLayoutOrder();
         });
     });
@@ -291,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     grid.addEventListener('dragover', (e) => {
         e.preventDefault();
         const draggingCard = grid.querySelector('.dragging');
-        if (!draggingCard) return;
+        if (!draggingCard || !dragPlaceholder) return;
 
         const otherCards = [...grid.querySelectorAll('.module-card:not(.dragging)')];
         
@@ -318,47 +398,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const isAfter = (e.clientX > targetBox.left + targetBox.width / 2) || 
                             (e.clientY > targetBox.top + targetBox.height / 2);
             
-            if (isAfter) {
-                grid.insertBefore(draggingCard, closestCard.element.nextSibling);
-            } else {
-                grid.insertBefore(draggingCard, closestCard.element);
+            const targetSibling = isAfter ? closestCard.element.nextSibling : closestCard.element;
+            
+            if (dragPlaceholder.nextSibling !== targetSibling) {
+                executeWithTransition(() => {
+                    grid.insertBefore(dragPlaceholder, targetSibling);
+                });
             }
         }
     });
 
     // --- Reset Action ---
     btnResetLayout.addEventListener('click', () => {
-        localStorage.removeItem('tacticalDashboardOrder');
-        localStorage.removeItem('tacticalDashboardMinimized');
-        localStorage.removeItem('tacticalDashboardTheme');
-        
-        minimizedModules.clear();
-        applyTheme('sapphire');
-        
-        // Reset all card visibilities
-        document.querySelectorAll('.module-card').forEach(card => {
-            card.style.display = 'flex';
-            card.classList.remove('hidden', 'minimizing');
+        executeWithTransition(() => {
+            localStorage.removeItem('tacticalDashboardOrder');
+            localStorage.removeItem('tacticalDashboardMinimized');
+            localStorage.removeItem('tacticalDashboardTheme');
             
-            const id = card.getAttribute('data-id');
-            if (id === 'timer') grid.appendChild(card);
-        });
-        
-        // Re-append in original order to match DOM default
-        const timerCard = document.getElementById('timer-module');
-        const tasksCard = document.getElementById('tasks-module');
-        const calcCard = document.getElementById('calculator-module');
-        const analyticsCard = document.getElementById('analytics-module');
-        const scratchpadCard = document.getElementById('scratchpad-module');
-        
-        grid.appendChild(timerCard);
-        grid.appendChild(tasksCard);
-        grid.appendChild(calcCard);
-        grid.appendChild(analyticsCard);
-        grid.appendChild(scratchpadCard);
+            minimizedModules.clear();
+            applyTheme('sapphire');
+            
+            // Reset all card visibilities
+            document.querySelectorAll('.module-card').forEach(card => {
+                card.style.display = 'flex';
+                card.classList.remove('hidden', 'minimizing');
+            });
+            
+            // Re-append in original order to match DOM default
+            const timerCard = document.getElementById('timer-module');
+            const tasksCard = document.getElementById('tasks-module');
+            const calcCard = document.getElementById('calculator-module');
+            const analyticsCard = document.getElementById('analytics-module');
+            const scratchpadCard = document.getElementById('scratchpad-module');
+            
+            grid.appendChild(timerCard);
+            grid.appendChild(tasksCard);
+            grid.appendChild(calcCard);
+            grid.appendChild(analyticsCard);
+            grid.appendChild(scratchpadCard);
 
-        renderRestoreDock();
-        updateGridColumns();
+            renderRestoreDock();
+            updateGridColumns();
+        });
     });
 
 
