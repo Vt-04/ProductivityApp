@@ -207,11 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Grid Layout & Column Management ---
     function updateGridColumns() {
-        const visibleCount = 5 - minimizedModules.size;
+        const visibleCount = 6 - minimizedModules.size;
         
-        grid.classList.remove('cols-5', 'cols-4', 'cols-3', 'cols-2', 'cols-1');
+        grid.classList.remove('cols-6', 'cols-5', 'cols-4', 'cols-3', 'cols-2', 'cols-1');
         
-        if (visibleCount === 5) {
+        if (visibleCount === 6) {
+            grid.classList.add('cols-6');
+        } else if (visibleCount === 5) {
             grid.classList.add('cols-5');
         } else if (visibleCount === 4) {
             grid.classList.add('cols-4');
@@ -252,6 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (id === 'calculator') { icon = 'fa-calculator'; label = 'Calculator'; btn.classList.add('hover-glow-purple'); }
             else if (id === 'analytics') { icon = 'fa-chart-line'; label = 'Analytics'; btn.classList.add('hover-glow-green'); }
             else if (id === 'scratchpad') { icon = 'fa-note-sticky'; label = 'Scratchpad'; btn.classList.add('hover-glow-teal'); }
+            else if (id === 'spotify') { icon = 'fa-music'; label = 'Audio Hub'; btn.classList.add('hover-glow-red'); }
             
             btn.innerHTML = `<i class="fa-solid ${icon}"></i> Restore ${label}`;
             

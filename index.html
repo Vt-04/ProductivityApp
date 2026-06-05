@@ -305,6 +305,36 @@
             </div>
         </div>
 
+        <!-- MODULE: Spotify Audio Hub -->
+        <div id="spotify-module" class="module-card border-glow-red" data-id="spotify">
+            <div class="card-controls">
+                <h2 class="card-title">Audio Hub</h2>
+                <button class="minimize-btn" data-target="spotify" title="Minimize module">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+            
+            <div class="spotify-container">
+                <!-- Preset Focus Music buttons -->
+                <div class="spotify-presets">
+                    <button class="btn-preset active" data-url="https://open.spotify.com/embed/playlist/37i9dQZF1DX8Ueb2vUJLmP" title="Chill lofi beats">Lofi</button>
+                    <button class="btn-preset" data-url="https://open.spotify.com/embed/playlist/37i9dQZF1DX5c3t1wTeGgY" title="High energy synthwave">Synthwave</button>
+                    <button class="btn-preset" data-url="https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRwui0ExPn" title="Ambient deep focus">Ambient</button>
+                </div>
+                
+                <!-- Player Iframe -->
+                <div class="spotify-player-wrapper">
+                    <iframe id="spotify-player" src="https://open.spotify.com/embed/playlist/37i9dQZF1DX8Ueb2vUJLmP" width="100%" height="320" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+                </div>
+
+                <!-- Custom Link paste -->
+                <div class="spotify-input-row">
+                    <input type="text" id="spotify-url-input" class="input-field" placeholder="Paste Spotify Link...">
+                    <button id="btn-load-spotify" class="btn-primary bg-red" title="Load Music"><i class="fa-solid fa-play"></i></button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 
@@ -325,6 +355,7 @@
     <script src="modules/calculator.js"></script>
     <script src="modules/analytics.js"></script>
     <script src="modules/scratchpad.js"></script>
+    <script src="modules/spotify.js"></script>
 </body>
 </html>
 
