@@ -132,8 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FLIP Transition Helper ---
     function executeWithTransition(actionFn) {
-        // 1. Get initial positions of all visible cards (excluding the one being dragged)
-        const items = [...grid.querySelectorAll('.module-card:not(.dragging)')];
+        // 1. Get initial positions of all visible cards
+        const items = [...grid.querySelectorAll('.module-card')];
         const firstRects = new Map();
         items.forEach(item => {
             if (item.style.display !== 'none') {
@@ -316,101 +316,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Drag & Drop Reordering ---
-    function saveLayoutOrder() {
-        const cards = [...grid.querySelectorAll('.module-card')];
-        const order = cards.map(c => c.getAttribute('data-id'));
-        localStorage.setItem('tacticalDashboardOrder', JSON.stringify(order));
-    }
-
-    function loadLayoutOrder() {
-        const orderStr = localStorage.getItem('tacticalDashboardOrder');
-        if (!orderStr) return;
-        try {
-            const order = JSON.parse(orderStr);
-            order.forEach(id => {
-                const card = document.getElementById(`${id}-module`);
-                if (card) {
-                    grid.appendChild(card);
-                }
-            });
-        } catch (e) {
-            console.error("Failed to load layout order", e);
-        }
-    }
-
-    // Enable HTML5 Drag & Drop
-    const cards = grid.querySelectorAll('.module-card');
-    
-    cards.forEach(card => {
-        card.setAttribute('draggable', 'false'); // Disable card-level drag
-        const handle = card.querySelector('.drag-handle');
-        handle.setAttribute('draggable', 'true'); // Make handle itself draggable
-        
-        handle.addEventListener('dragstart', (e) => {
-            card.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            
-            // Set the drag image to be the entire card, matching mouse click offsets
-            if (e.dataTransfer.setDragImage) {
-                const rect = card.getBoundingClientRect();
-                const offsetX = e.clientX - rect.left;
-                const offsetY = e.clientY - rect.top;
-                e.dataTransfer.setDragImage(card, offsetX, offsetY);
-            }
-        });
-
-        handle.addEventListener('dragend', () => {
-            card.classList.remove('dragging');
-            saveLayoutOrder();
-        });
-    });
-
-    // Drag insertion algorithm using Euclidean distance to card centers
-    grid.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        const draggingCard = grid.querySelector('.dragging');
-        if (!draggingCard) return;
-
-        const otherCards = [...grid.querySelectorAll('.module-card:not(.dragging)')];
-        
-        const closestCard = otherCards.reduce((closest, child) => {
-            // Skip hidden cards
-            if (child.style.display === 'none') return closest;
-
-            const box = child.getBoundingClientRect();
-            const centerX = box.left + box.width / 2;
-            const centerY = box.top + box.height / 2;
-            
-            // squared distance to mouse cursor
-            const distance = Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2);
-            
-            if (distance < closest.distance) {
-                return { distance: distance, element: child, box: box };
-            } else {
-                return closest;
-            }
-        }, { distance: Number.POSITIVE_INFINITY, element: null });
-
-        if (closestCard.element) {
-            const targetBox = closestCard.box;
-            const isAfter = (e.clientX > targetBox.left + targetBox.width / 2) || 
-                            (e.clientY > targetBox.top + targetBox.height / 2);
-            
-            const targetSibling = isAfter ? closestCard.element.nextSibling : closestCard.element;
-            
-            if (draggingCard.nextSibling !== targetSibling) {
-                executeWithTransition(() => {
-                    grid.insertBefore(draggingCard, targetSibling);
-                });
-            }
-        }
-    });
-
     // --- Reset Action ---
     btnResetLayout.addEventListener('click', () => {
         executeWithTransition(() => {
-            localStorage.removeItem('tacticalDashboardOrder');
             localStorage.removeItem('tacticalDashboardMinimized');
             localStorage.removeItem('tacticalDashboardTheme');
             
@@ -422,19 +330,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.style.display = 'flex';
                 card.classList.remove('hidden', 'minimizing');
             });
-            
-            // Re-append in original order to match DOM default
-            const timerCard = document.getElementById('timer-module');
-            const tasksCard = document.getElementById('tasks-module');
-            const calcCard = document.getElementById('calculator-module');
-            const analyticsCard = document.getElementById('analytics-module');
-            const scratchpadCard = document.getElementById('scratchpad-module');
-            
-            grid.appendChild(timerCard);
-            grid.appendChild(tasksCard);
-            grid.appendChild(calcCard);
-            grid.appendChild(analyticsCard);
-            grid.appendChild(scratchpadCard);
 
             renderRestoreDock();
             updateGridColumns();
@@ -527,7 +422,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial setup loads
-    loadLayoutOrder();
     renderRestoreDock();
     updateGridColumns();
     initParticles();
