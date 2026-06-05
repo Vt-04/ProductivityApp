@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Workspace Dashboard</title>
+    <!-- Google Fonts: Outfit for UI, JetBrains Mono for display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Solid/Regular/Brands -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gradient">
+    
+    <!-- Header Controls -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <span class="sub-greeting">System Active</span>
+            <h1 id="dashboard-greeting" class="main-greeting">Tactical Hub</h1>
+        </div>
+        <div class="header-center">
+            <div id="header-clock" class="header-clock">00:00:00</div>
+            <div id="header-date" class="header-date">Thursday, June 4, 2026</div>
+        </div>
+        <div class="header-right">
+            <div class="theme-picker" title="Change Theme Accent">
+                <span class="theme-picker-label"><i class="fa-solid fa-palette"></i></span>
+                <button class="theme-dot active" data-theme="sapphire" style="background: hsl(199, 89%, 48%);" title="Neon Sapphire"></button>
+                <button class="theme-dot" data-theme="cyberpunk" style="background: hsl(350, 89%, 60%);" title="Cyberpunk Red"></button>
+                <button class="theme-dot" data-theme="emerald" style="background: hsl(142, 71%, 45%);" title="Matrix Emerald"></button>
+                <button class="theme-dot" data-theme="amber" style="background: hsl(24, 100%, 55%);" title="Solar Amber"></button>
+            </div>
+            <button id="btn-reset-layout" class="btn-secondary" title="Reset modules layout and state">
+                <i class="fa-solid fa-arrows-rotate"></i> Reset Layout
+            </button>
+        </div>
+    </header>
+
+
+    <!-- Floating Dock for Minimized Modules -->
+    <div id="restore-dock" class="restore-dock hidden">
+        <span class="dock-label"><i class="fa-solid fa-box-archive"></i> Minimized:</span>
+        <div id="dock-container" class="dock-buttons">
+            <!-- Buttons injected dynamically, matching structure:
+            <button id="dock-timer" class="restore-btn hover-glow-blue" data-target="timer">
+                <i class="fa-solid fa-stopwatch"></i> Timer
+            </button>
+            -->
+        </div>
+    </div>
+
+    <!-- Main Grid Workspace -->
+    <div id="main-grid" class="main-grid">
+        
+        <!-- MODULE: Focus Timer -->
+        <div id="timer-module" class="module-card glass-card border-glow-blue" draggable="true" data-id="timer">
+            <div class="card-controls">
+                <div class="drag-handle" title="Drag to reorder module">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                </div>
+                <h2 class="card-title">Focus Session</h2>
+                <button class="minimize-btn" data-target="timer" title="Minimize module">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+            
+            <div class="timer-container">
+                <!-- SVG Circular Progress -->
+                <div class="circle-progress-container">
+                    <svg class="progress-ring" width="200" height="200">
+                        <circle class="progress-ring-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="8" fill="transparent" r="85" cx="100" cy="100"/>
+                        <circle id="timer-ring-active" class="progress-ring-active" stroke="var(--accent-blue)" stroke-width="8" stroke-dasharray="534" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" r="85" cx="100" cy="100"/>
+                    </svg>
+                    <div id="timer-display" class="timer-display">25:00</div>
+                </div>
+
+                <!-- Mode Selectors -->
+                <div class="timer-modes">
+                    <button id="mode-focus" class="timer-mode-btn active" data-mode="focus">Focus</button>
+                    <button id="mode-short" class="timer-mode-btn" data-mode="short">Short Break</button>
+                    <button id="mode-long" class="timer-mode-btn" data-mode="long">Long Break</button>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="timer-controls">
+                    <button id="timer-toggle-btn" class="btn-primary" title="Start Focus Timer">
+                        <i class="fa-solid fa-play"></i> Start
+                    </button>
+                    <button id="timer-reset-btn" class="btn-icon" title="Reset Timer">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <button id="timer-custom-btn" class="btn-icon" title="Custom Duration">
+                        <i class="fa-solid fa-clock"></i>
+                    </button>
+                </div>
+
+                <!-- Custom time popup/input drawer (hidden by default) -->
+                <div id="custom-time-drawer" class="custom-time-drawer hidden">
+                    <input type="number" id="custom-minutes" min="1" max="180" placeholder="Minutes" class="input-field">
+                    <button id="btn-save-custom" class="btn-accent">Set</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE: Task Manager -->
+        <div id="tasks-module" class="module-card glass-card border-glow-orange" draggable="true" data-id="tasks">
+            <div class="card-controls">
+                <div class="drag-handle" title="Drag to reorder module">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                </div>
+                <h2 class="card-title">Tasks</h2>
+                <button class="minimize-btn" data-target="tasks" title="Minimize module">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+            
+            <div class="task-manager-container">
+                <!-- Add Task -->
+                <div class="task-form">
+                    <input type="text" id="task-input" class="input-field" placeholder="Create task... (Press Enter)">
+                    <select id="task-tag-select" class="input-field select-tag">
+                        <option value="Work">💼 Work</option>
+                        <option value="Personal">🏠 Personal</option>
+                        <option value="Focus">⚡ Focus</option>
+                        <option value="Health">🌱 Health</option>
+                    </select>
+                    <button id="btn-add-task" class="btn-primary bg-orange" title="Add Task">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="task-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="active">Active</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+                
+                <!-- Task List -->
+                <ul id="task-list" class="task-list custom-scrollbar">
+                    <!-- Loaded dynamically via tasks.js -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- MODULE: Calculator -->
+        <div id="calculator-module" class="module-card glass-card border-glow-purple" draggable="true" data-id="calculator">
+            <div class="card-controls">
+                <div class="drag-handle" title="Drag to reorder module">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                </div>
+                <h2 class="card-title">Calculator</h2>
+                <button class="minimize-btn" data-target="calculator" title="Minimize module">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+            
+            <div class="calc-container">
+                <!-- Display -->
+                <div class="calc-display-wrapper">
+                    <div id="calc-expression" class="calc-expression"></div>
+                    <div id="calc-result" class="calc-result">0</div>
+                </div>
+                
+                <!-- Buttons Grid -->
+                <div class="calc-buttons-grid">
+                    <button class="btn-calc btn-op" data-action="clear" title="Clear">C</button>
+                    <button class="btn-calc btn-op" data-action="backspace" title="Delete"><i class="fa-solid fa-backspace"></i></button>
+                    <button class="btn-calc btn-op" data-action="operator" data-value="%">%</button>
+                    <button class="btn-calc btn-op" data-action="operator" data-value="/">&divide;</button>
+                    
+                    <button class="btn-calc" data-action="number" data-value="7">7</button>
+                    <button class="btn-calc" data-action="number" data-value="8">8</button>
+                    <button class="btn-calc" data-action="number" data-value="9">9</button>
+                    <button class="btn-calc btn-op" data-action="operator" data-value="*">&times;</button>
+                    
+                    <button class="btn-calc" data-action="number" data-value="4">4</button>
+                    <button class="btn-calc" data-action="number" data-value="5">5</button>
+                    <button class="btn-calc" data-action="number" data-value="6">6</button>
+                    <button class="btn-calc btn-op" data-action="operator" data-value="-">&minus;</button>
+                    
+                    <button class="btn-calc" data-action="number" data-value="1">1</button>
+                    <button class="btn-calc" data-action="number" data-value="2">2</button>
+                    <button class="btn-calc" data-action="number" data-value="3">3</button>
+                    <button class="btn-calc btn-op" data-action="operator" data-value="+">+</button>
+                    
+                    <button class="btn-calc col-span-2" data-action="number" data-value="0">0</button>
+                    <button class="btn-calc" data-action="number" data-value=".">.</button>
+                    <button class="btn-calc btn-eval" data-action="calculate">=</button>
+                </div>
+
+                <!-- Calculator History Drawer -->
+                <div class="calc-history-toggle">
+                    <button id="btn-toggle-history" class="btn-text" title="View calculation logs">
+                        <i class="fa-solid fa-history"></i> History
+                    </button>
+                </div>
+                <div id="calc-history-drawer" class="calc-history-drawer hidden">
+                    <div class="drawer-header">
+                        <span>Calculation Log</span>
+                        <button id="btn-clear-history" class="btn-icon" title="Clear history"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <ul id="calc-history-list" class="calc-history-list custom-scrollbar">
+                        <!-- History logs loaded dynamically -->
+                        <li class="empty-history">No calculations logged.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE: Analytics & Clock Widget -->
+        <div id="analytics-module" class="module-card glass-card border-glow-green" draggable="true" data-id="analytics">
+            <div class="card-controls">
+                <div class="drag-handle" title="Drag to reorder module">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                </div>
+                <h2 class="card-title">Analytics</h2>
+                <button class="minimize-btn" data-target="analytics" title="Minimize module">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+            
+            <div class="analytics-container">
+                <!-- Mini Stats Panel -->
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-icon circle-glow-blue"><i class="fa-solid fa-hourglass-half"></i></div>
+                        <div class="stat-info">
+                            <span id="stat-focus-time" class="stat-value">0m</span>
+                            <span class="stat-label">Focus Time</span>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon circle-glow-green"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <span id="stat-tasks-count" class="stat-value">0</span>
+                            <span class="stat-label">Completed Tasks</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather Widget Section -->
+                <div class="weather-panel">
+                    <div class="weather-info">
+                        <span id="weather-temp" class="weather-temp">--°C</span>
+                        <div class="weather-meta">
+                            <span id="weather-cond" class="weather-cond">Loading...</span>
+                            <span id="weather-location" class="weather-location">Detecting...</span>
+                        </div>
+                    </div>
+                    <div id="weather-icon-container" class="weather-icon">
+                        <i class="fa-solid fa-cloud-sun"></i>
+                    </div>
+                </div>
+
+
+                <!-- Chart Title -->
+                <div class="chart-header">
+                    <h3 class="chart-title"><i class="fa-solid fa-chart-line"></i> Weekly Productivity</h3>
+                    <span id="chart-week-range" class="chart-range">Focus duration (mins)</span>
+                </div>
+                
+                <!-- Chart Visualizer -->
+                <div class="chart-wrapper">
+                    <canvas id="productivity-chart" width="280" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE: Scratchpad -->
+        <div id="scratchpad-module" class="module-card glass-card border-glow-teal" draggable="true" data-id="scratchpad">
+            <div class="card-controls">
+                <div class="drag-handle" title="Drag to reorder module">
+                    <i class="fa-solid fa-grip-vertical"></i>
+                </div>
+                <h2 class="card-title">Scratchpad</h2>
+                <button class="minimize-btn" data-target="scratchpad" title="Minimize module">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+            
+            <div class="scratchpad-container">
+                <textarea id="scratchpad-text" class="scratchpad-textarea custom-scrollbar" placeholder="Jot down quick thoughts, links, or code here... (autosaved)"></textarea>
+                <div class="scratchpad-toolbar">
+                    <div class="scratchpad-stats">
+                        <span id="scratchpad-words">0 words</span>
+                        <span class="dot-separator">•</span>
+                        <span id="scratchpad-chars">0 chars</span>
+                    </div>
+                    <div class="scratchpad-actions">
+                        <button id="btn-scratchpad-copy" class="btn-text" title="Copy text to clipboard">
+                            <i class="fa-solid fa-copy"></i> Copy
+                        </button>
+                        <button id="btn-scratchpad-clear" class="btn-text text-red" title="Clear notepad">
+                            <i class="fa-solid fa-trash-can"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Background Glow Blobs -->
+    <div class="bg-glow blob-1"></div>
+    <div class="bg-glow blob-2"></div>
+
+    <!-- Audio element for Pomodoro notification -->
+    <audio id="timer-chime" class="hidden"></audio>
+
+    <!-- Main JS Application scripts -->
+    <script src="app.js"></script>
+    <script src="modules/timer.js"></script>
+    <script src="modules/tasks.js"></script>
+    <script src="modules/calculator.js"></script>
+    <script src="modules/analytics.js"></script>
+    <script src="modules/scratchpad.js"></script>
+</body>
+</html>
+
