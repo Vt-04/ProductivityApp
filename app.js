@@ -442,8 +442,93 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
+    // --- Interactive Particle Background ---
+    function initParticles() {
+        const canvas = document.getElementById('particles-bg');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        let particles = [];
+        const count = 35;
+        
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.radius = Math.random() * 2 + 1;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                
+                const color = getComputedStyle(document.documentElement).getPropertyValue('--theme-1').trim() || '#0ea5e9';
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+        
+        for (let i = 0; i < count; i++) {
+            particles.push(new Particle());
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const color = getComputedStyle(document.documentElement).getPropertyValue('--theme-1').trim() || '#0ea5e9';
+            
+            particles.forEach((p, idx) => {
+                p.update();
+                p.draw();
+                
+                for (let j = idx + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        
+                        let hslaColor = color;
+                        if (color.startsWith('hsl(')) {
+                            hslaColor = color.replace('hsl(', 'hsla(').replace(')', `, ${0.12 * (1 - dist / 120)})`);
+                        } else {
+                            hslaColor = `rgba(14, 165, 233, ${0.12 * (1 - dist / 120)})`;
+                        }
+                        ctx.strokeStyle = hslaColor;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    }
+
     // Initial setup loads
     loadLayoutOrder();
     renderRestoreDock();
     updateGridColumns();
+    initParticles();
 });

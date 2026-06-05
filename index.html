@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tactical Workspace Dashboard</title>
-    <!-- Google Fonts: Outfit for UI, JetBrains Mono for display -->
+    <!-- Google Fonts: Plus Jakarta Sans for UI, JetBrains Mono for display -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Font Awesome Solid/Regular/Brands -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
@@ -56,7 +56,7 @@
     <div id="main-grid" class="main-grid">
         
         <!-- MODULE: Focus Timer -->
-        <div id="timer-module" class="module-card glass-card border-glow-blue" draggable="true" data-id="timer">
+        <div id="timer-module" class="module-card bento-small border-glow-blue" draggable="true" data-id="timer">
             <div class="card-controls">
                 <div class="drag-handle" title="Drag to reorder module">
                     <i class="fa-solid fa-grip-vertical"></i>
@@ -106,7 +106,7 @@
         </div>
 
         <!-- MODULE: Task Manager -->
-        <div id="tasks-module" class="module-card glass-card border-glow-orange" draggable="true" data-id="tasks">
+        <div id="tasks-module" class="module-card bento-tall border-glow-orange" draggable="true" data-id="tasks">
             <div class="card-controls">
                 <div class="drag-handle" title="Drag to reorder module">
                     <i class="fa-solid fa-grip-vertical"></i>
@@ -147,7 +147,7 @@
         </div>
 
         <!-- MODULE: Calculator -->
-        <div id="calculator-module" class="module-card glass-card border-glow-purple" draggable="true" data-id="calculator">
+        <div id="calculator-module" class="module-card bento-small border-glow-purple" draggable="true" data-id="calculator">
             <div class="card-controls">
                 <div class="drag-handle" title="Drag to reorder module">
                     <i class="fa-solid fa-grip-vertical"></i>
@@ -212,7 +212,7 @@
         </div>
 
         <!-- MODULE: Analytics & Clock Widget -->
-        <div id="analytics-module" class="module-card glass-card border-glow-green" draggable="true" data-id="analytics">
+        <div id="analytics-module" class="module-card bento-large border-glow-green" draggable="true" data-id="analytics">
             <div class="card-controls">
                 <div class="drag-handle" title="Drag to reorder module">
                     <i class="fa-solid fa-grip-vertical"></i>
@@ -289,7 +289,7 @@
         </div>
 
         <!-- MODULE: Scratchpad -->
-        <div id="scratchpad-module" class="module-card glass-card border-glow-teal" draggable="true" data-id="scratchpad">
+        <div id="scratchpad-module" class="module-card bento-wide border-glow-teal" draggable="true" data-id="scratchpad">
             <div class="card-controls">
                 <div class="drag-handle" title="Drag to reorder module">
                     <i class="fa-solid fa-grip-vertical"></i>
@@ -322,6 +322,9 @@
 
     </div>
 
+
+    <!-- Interactive Background Particles -->
+    <canvas id="particles-bg" class="particles-bg"></canvas>
 
     <!-- Background Glow Blobs -->
     <div class="bg-glow blob-1"></div>

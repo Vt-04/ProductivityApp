@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.fillStyle = textDimColor;
-        ctx.font = '500 9px Outfit';
+        ctx.font = '500 9px "Plus Jakarta Sans"';
         ctx.textAlign = 'right';
         ctx.textBaseline = 'middle';
 
@@ -373,14 +373,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Label draw X-axis (day letters)
             ctx.fillStyle = index === 6 ? dynamicAccentBlue : textMutedColor; // Highlight today
-            ctx.font = index === 6 ? '700 9px Outfit' : '500 9px Outfit';
+            ctx.font = index === 6 ? '700 9px "Plus Jakarta Sans"' : '500 9px "Plus Jakarta Sans"';
             ctx.textAlign = 'center';
             ctx.fillText(labels[index], pt.x, height - bottomPadding + 14);
 
             // Draw value tooltip indicator above today
             if (index === 6 && pt.value > 0) {
                 ctx.fillStyle = dynamicAccentBlue;
-                ctx.font = '700 8px Outfit';
+                ctx.font = '700 8px "Plus Jakarta Sans"';
                 ctx.fillText(`${pt.value}m`, pt.x, pt.y - 10);
             }
         });
