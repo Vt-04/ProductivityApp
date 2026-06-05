@@ -1105,6 +1105,31 @@ body {
     gap: 0.75rem;
 }
 
+.weather-temp-container {
+    display: flex;
+    align-items: baseline;
+    gap: 0.15rem;
+}
+
+.btn-unit {
+    background: transparent;
+    border: none;
+    color: var(--accent-green);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.1rem 0.25rem;
+    border-radius: 4px;
+    transition: background var(--transition-fast), color var(--transition-fast);
+    font-family: inherit;
+}
+
+.btn-unit:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+}
+
+
 .weather-temp {
     font-family: 'JetBrains Mono', monospace;
     font-size: 1.4rem;

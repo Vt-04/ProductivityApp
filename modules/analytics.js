@@ -9,8 +9,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const weatherCond = document.getElementById('weather-cond');
     const weatherLoc = document.getElementById('weather-location');
     const weatherIconContainer = document.getElementById('weather-icon-container');
+    const btnWeatherUnit = document.getElementById('btn-weather-unit');
 
     // --- State and Config ---
+    let currentTempC = null;
+    let currentUnit = localStorage.getItem('tacticalDashboardWeatherUnit') || 'C';
+
     const accentBlue = 'rgb(14, 165, 233)';
     const accentGreen = 'rgb(34, 197, 94)';
     const textMutedColor = 'rgba(148, 163, 184, 0.5)'; // slate-400
@@ -94,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!current) throw new Error('No weather data object found');
 
-            const temp = Math.round(current.temperature);
+            currentTempC = Math.round(current.temperature);
             const code = current.weathercode;
             
             const weatherObj = weatherMap[code] || { 
@@ -105,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // Update UI values
-            weatherTemp.textContent = `${temp}°C`;
+            displayTemperature();
             weatherCond.textContent = weatherObj.desc;
             weatherLoc.textContent = locationLabel;
             
@@ -119,14 +123,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function displayTemperature() {
+        if (!weatherTemp || !btnWeatherUnit) return;
+        if (currentTempC === null) {
+            weatherTemp.textContent = '--';
+            btnWeatherUnit.textContent = currentUnit === 'F' ? '°F' : '°C';
+            return;
+        }
+        
+        if (currentUnit === 'F') {
+            const tempF = Math.round((currentTempC * 9/5) + 32);
+            weatherTemp.textContent = tempF;
+            btnWeatherUnit.textContent = '°F';
+        } else {
+            weatherTemp.textContent = currentTempC;
+            btnWeatherUnit.textContent = '°C';
+        }
+    }
+
     function showWeatherError() {
-        weatherTemp.textContent = '--°C';
+        currentTempC = null;
+        displayTemperature();
         weatherCond.textContent = 'Offline / Error';
         weatherLoc.textContent = 'Weather widget';
         weatherIconContainer.innerHTML = '<i class="fa-solid fa-cloud-circle-exclamation"></i>';
         weatherIconContainer.style.color = 'var(--accent-red)';
         weatherIconContainer.style.textShadow = '0 0 12px rgba(239, 68, 68, 0.3)';
     }
+
 
 
     // --- Stats Updater ---
@@ -341,6 +365,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 100);
     });
 
+    // Toggle Weather Unit
+    if (btnWeatherUnit) {
+        btnWeatherUnit.addEventListener('click', () => {
+            currentUnit = currentUnit === 'C' ? 'F' : 'C';
+            localStorage.setItem('tacticalDashboardWeatherUnit', currentUnit);
+            displayTemperature();
+        });
+    }
+
     // Initial Render calls
     updateStatsPanel();
     fetchWeather();
@@ -349,4 +382,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // Refresh weather every 30 minutes
     setInterval(fetchWeather, 30 * 60 * 1000);
 });
+
 

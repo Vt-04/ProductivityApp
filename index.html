@@ -245,7 +245,10 @@
                 <!-- Weather Widget Section -->
                 <div class="weather-panel">
                     <div class="weather-info">
-                        <span id="weather-temp" class="weather-temp">--°C</span>
+                        <div class="weather-temp-container">
+                            <span id="weather-temp" class="weather-temp">--</span>
+                            <button id="btn-weather-unit" class="btn-unit" title="Toggle °C / °F">°C</button>
+                        </div>
                         <div class="weather-meta">
                             <span id="weather-cond" class="weather-cond">Loading...</span>
                             <span id="weather-location" class="weather-location">Detecting...</span>
@@ -255,6 +258,7 @@
                         <i class="fa-solid fa-cloud-sun"></i>
                     </div>
                 </div>
+
 
 
                 <!-- Chart Title -->
