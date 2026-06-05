@@ -346,6 +346,71 @@
             </div>
         </div>
 
+        <!-- MODULE: Social Comm-Center -->
+        <div id="social-module" class="module-card border-glow-pink col-span-2" data-id="social">
+            <div class="card-controls">
+                <h2 class="card-title">Comm-Center</h2>
+                <button class="focus-btn" data-target="social" title="Focus module">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <button class="minimize-btn" data-target="social" title="Minimize module">
+                    <i class="fa-solid fa-compress"></i>
+                </button>
+            </div>
+            
+            <div class="social-container">
+                <!-- Offline Configuration Screen -->
+                <div id="social-config-screen" class="social-config-screen">
+                    <div class="config-instructions">
+                        <h3><i class="fa-solid fa-link-slash text-red"></i> Firebase Connection Required</h3>
+                        <p>Link your Realtime Database to unlock chat, notice board, and co-working presence.</p>
+                    </div>
+                    <div class="config-form">
+                        <input type="text" id="social-db-url" class="input-field" placeholder="Database URL (https://project-id.firebaseio.com)">
+                        <input type="text" id="social-db-key" class="input-field" placeholder="API Key">
+                        <input type="text" id="social-db-id" class="input-field" placeholder="Project ID">
+                        <button id="btn-connect-social" class="btn-primary bg-pink">Establish Link</button>
+                    </div>
+                </div>
+
+                <!-- Online Active Screen -->
+                <div id="social-active-screen" class="social-active-screen hidden">
+                    <div class="social-layout">
+                        <!-- Left Panel: Settings & Presence -->
+                        <div class="social-sidebar">
+                            <div class="sidebar-section">
+                                <h4><i class="fa-solid fa-user-gear"></i> Profile</h4>
+                                <div class="profile-input-row">
+                                    <input type="text" id="social-username" class="input-field-sm" placeholder="Username">
+                                    <button id="btn-save-username" class="btn-icon-sm" title="Save name"><i class="fa-solid fa-check"></i></button>
+                                </div>
+                            </div>
+                            <div class="sidebar-section flex-grow">
+                                <h4><i class="fa-solid fa-signal"></i> Online Presence</h4>
+                                <ul id="presence-list" class="presence-list custom-scrollbar">
+                                    <!-- Populated dynamically -->
+                                </ul>
+                            </div>
+                            <div class="sidebar-footer">
+                                <button id="btn-disconnect-social" class="btn-text text-red" title="Disconnect Firebase"><i class="fa-solid fa-unlink"></i> Disconnect</button>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Chat Lounge -->
+                        <div class="social-chat-panel">
+                            <div id="chat-messages" class="chat-messages custom-scrollbar">
+                                <!-- Loaded dynamically -->
+                            </div>
+                            <div class="chat-input-row">
+                                <input type="text" id="chat-input" class="input-field" placeholder="Type message... (Press Enter)">
+                                <button id="btn-send-message" class="btn-primary bg-pink" title="Send message"><i class="fa-solid fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Module Manager Drawer -->
@@ -388,6 +453,9 @@
     <script src="modules/analytics.js"></script>
     <script src="modules/scratchpad.js"></script>
     <script src="modules/spotify.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="modules/social.js"></script>
 </body>
 </html>
 

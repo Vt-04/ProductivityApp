@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isRunning) return;
         isRunning = true;
         updateToggleButton();
+        window.dispatchEvent(new CustomEvent('timerStateChanged', { detail: { isRunning: true } }));
 
         timerInterval = setInterval(() => {
             if (secondsRemaining > 0) {
@@ -121,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(timerInterval);
         timerInterval = null;
         updateToggleButton();
+        window.dispatchEvent(new CustomEvent('timerStateChanged', { detail: { isRunning: false } }));
 
         // Flush any remaining accumulated seconds (if > 30s, round up to 1 minute focus)
         if (accumulatedSecondsThisSession >= 30) {

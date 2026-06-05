@@ -224,11 +224,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Grid Layout & Column Management ---
     function updateGridColumns() {
-        const visibleCount = 6 - minimizedModules.size;
+        const visibleCount = 7 - minimizedModules.size;
         
-        grid.classList.remove('cols-6', 'cols-5', 'cols-4', 'cols-3', 'cols-2', 'cols-1');
+        grid.classList.remove('cols-8', 'cols-7', 'cols-6', 'cols-5', 'cols-4', 'cols-3', 'cols-2', 'cols-1');
         
-        if (visibleCount === 6) {
+        if (visibleCount >= 8) {
+            grid.classList.add('cols-8');
+        } else if (visibleCount === 7) {
+            grid.classList.add('cols-7');
+        } else if (visibleCount === 6) {
             grid.classList.add('cols-6');
         } else if (visibleCount === 5) {
             grid.classList.add('cols-5');
@@ -255,7 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 'calculator', label: 'Calculator', icon: 'fa-calculator', colorClass: 'switch-calculator', iconStyle: 'background: rgba(168, 85, 247, 0.1); color: var(--accent-purple);' },
         { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line', colorClass: 'switch-analytics', iconStyle: 'background: rgba(34, 197, 94, 0.1); color: var(--accent-green);' },
         { id: 'scratchpad', label: 'Scratchpad', icon: 'fa-note-sticky', colorClass: 'switch-scratchpad', iconStyle: 'background: rgba(20, 184, 166, 0.1); color: var(--accent-teal);' },
-        { id: 'spotify', label: 'Audio Hub', icon: 'fa-music', colorClass: 'switch-spotify', iconStyle: 'background: rgba(239, 68, 68, 0.1); color: var(--accent-red);' }
+        { id: 'spotify', label: 'Audio Hub', icon: 'fa-music', colorClass: 'switch-spotify', iconStyle: 'background: rgba(239, 68, 68, 0.1); color: var(--accent-red);' },
+        { id: 'social', label: 'Comm-Center', icon: 'fa-users', colorClass: 'switch-social', iconStyle: 'background: rgba(236, 72, 153, 0.1); color: var(--accent-pink);' }
     ];
 
     function buildToggleList() {
