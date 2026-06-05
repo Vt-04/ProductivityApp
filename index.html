@@ -33,6 +33,9 @@
                 <button class="theme-dot" data-theme="emerald" style="background: hsl(142, 71%, 45%);" title="Matrix Emerald"></button>
                 <button class="theme-dot" data-theme="amber" style="background: hsl(24, 100%, 55%);" title="Solar Amber"></button>
             </div>
+            <button id="btn-toggle-drawer" class="btn-secondary" title="Manage workspace modules">
+                <i class="fa-solid fa-sliders"></i> Modules
+            </button>
             <button id="btn-reset-layout" class="btn-secondary" title="Reset modules layout and state">
                 <i class="fa-solid fa-arrows-rotate"></i> Reset Layout
             </button>
@@ -40,17 +43,7 @@
     </header>
 
 
-    <!-- Floating Dock for Minimized Modules -->
-    <div id="restore-dock" class="restore-dock hidden">
-        <span class="dock-label"><i class="fa-solid fa-box-archive"></i> Minimized:</span>
-        <div id="dock-container" class="dock-buttons">
-            <!-- Buttons injected dynamically, matching structure:
-            <button id="dock-timer" class="restore-btn hover-glow-blue" data-target="timer">
-                <i class="fa-solid fa-stopwatch"></i> Timer
-            </button>
-            -->
-        </div>
-    </div>
+
 
     <!-- Main Grid Workspace -->
     <div id="main-grid" class="main-grid">
@@ -336,6 +329,24 @@
         </div>
 
     </div>
+
+    <!-- Module Manager Drawer -->
+    <div id="module-drawer" class="module-drawer">
+        <div class="drawer-header">
+            <h3><i class="fa-solid fa-shapes"></i> Modules</h3>
+            <button id="btn-close-drawer" class="btn-close" title="Close Drawer">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="drawer-content">
+            <p class="drawer-subtitle">Toggle widgets to customize your tactical layout.</p>
+            <div id="module-toggle-list" class="module-toggle-list">
+                <!-- Dynamically populated toggle list items -->
+            </div>
+        </div>
+    </div>
+    <!-- Drawer Overlay -->
+    <div id="drawer-overlay" class="drawer-overlay"></div>
 
 
     <!-- Interactive Background Particles -->

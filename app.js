@@ -3,8 +3,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- State and Cache ---
     const grid = document.getElementById('main-grid');
-    const restoreDock = document.getElementById('restore-dock');
-    const dockContainer = document.getElementById('dock-container');
+    const moduleDrawer = document.getElementById('module-drawer');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+    const btnToggleDrawer = document.getElementById('btn-toggle-drawer');
+    const btnCloseDrawer = document.getElementById('btn-close-drawer');
+    const moduleToggleList = document.getElementById('module-toggle-list');
     const greetingEl = document.getElementById('dashboard-greeting');
     const clockEl = document.getElementById('header-clock');
     const dateEl = document.getElementById('header-date');
@@ -231,40 +234,88 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tacticalDashboardMinimized', JSON.stringify([...minimizedModules]));
     }
 
-    function renderRestoreDock() {
-        dockContainer.innerHTML = '';
+    // --- Drawer Config & Toggle Management ---
+    const modulesConfig = [
+        { id: 'timer', label: 'Focus Session', icon: 'fa-stopwatch', colorClass: 'switch-timer', iconStyle: 'background: rgba(14, 165, 233, 0.1); color: var(--accent-blue);' },
+        { id: 'tasks', label: 'Tasks', icon: 'fa-list-check', colorClass: 'switch-tasks', iconStyle: 'background: rgba(249, 115, 22, 0.1); color: var(--accent-orange);' },
+        { id: 'calculator', label: 'Calculator', icon: 'fa-calculator', colorClass: 'switch-calculator', iconStyle: 'background: rgba(168, 85, 247, 0.1); color: var(--accent-purple);' },
+        { id: 'analytics', label: 'Analytics', icon: 'fa-chart-line', colorClass: 'switch-analytics', iconStyle: 'background: rgba(34, 197, 94, 0.1); color: var(--accent-green);' },
+        { id: 'scratchpad', label: 'Scratchpad', icon: 'fa-note-sticky', colorClass: 'switch-scratchpad', iconStyle: 'background: rgba(20, 184, 166, 0.1); color: var(--accent-teal);' },
+        { id: 'spotify', label: 'Audio Hub', icon: 'fa-music', colorClass: 'switch-spotify', iconStyle: 'background: rgba(239, 68, 68, 0.1); color: var(--accent-red);' }
+    ];
+
+    function buildToggleList() {
+        moduleToggleList.innerHTML = '';
         
-        if (minimizedModules.size === 0) {
-            restoreDock.classList.add('hidden');
-            return;
-        }
-        
-        restoreDock.classList.remove('hidden');
-        
-        minimizedModules.forEach(id => {
-            const btn = document.createElement('button');
-            btn.className = 'restore-btn';
-            btn.setAttribute('data-target', id);
+        modulesConfig.forEach(mod => {
+            const isChecked = !minimizedModules.has(mod.id);
+            const item = document.createElement('div');
+            item.className = 'toggle-item';
+            item.innerHTML = `
+                <div class="toggle-info">
+                    <div class="toggle-icon" style="${mod.iconStyle}">
+                        <i class="fa-solid ${mod.icon}"></i>
+                    </div>
+                    <div class="toggle-text">
+                        <span class="toggle-label">${mod.label}</span>
+                        <span id="status-${mod.id}" class="toggle-status">${isChecked ? 'Active' : 'Minimized'}</span>
+                    </div>
+                </div>
+                <label class="switch ${mod.colorClass}">
+                    <input type="checkbox" id="checkbox-${mod.id}" ${isChecked ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+            `;
             
-            // Assign icon and label based on ID
-            let icon = 'fa-circle';
-            let label = id;
-            if (id === 'timer') { icon = 'fa-stopwatch'; label = 'Timer'; btn.classList.add('hover-glow-blue'); }
-            else if (id === 'tasks') { icon = 'fa-list-check'; label = 'Tasks'; btn.classList.add('hover-glow-orange'); }
-            else if (id === 'calculator') { icon = 'fa-calculator'; label = 'Calculator'; btn.classList.add('hover-glow-purple'); }
-            else if (id === 'analytics') { icon = 'fa-chart-line'; label = 'Analytics'; btn.classList.add('hover-glow-green'); }
-            else if (id === 'scratchpad') { icon = 'fa-note-sticky'; label = 'Scratchpad'; btn.classList.add('hover-glow-teal'); }
-            else if (id === 'spotify') { icon = 'fa-music'; label = 'Audio Hub'; btn.classList.add('hover-glow-red'); }
-            
-            btn.innerHTML = `<i class="fa-solid ${icon}"></i> Restore ${label}`;
-            
-            btn.addEventListener('click', () => {
-                restoreModule(id);
+            const checkbox = item.querySelector('input');
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    restoreModule(mod.id);
+                } else {
+                    minimizeModule(mod.id);
+                }
             });
             
-            dockContainer.appendChild(btn);
+            moduleToggleList.appendChild(item);
         });
     }
+
+    function syncTogglesState() {
+        modulesConfig.forEach(mod => {
+            const isChecked = !minimizedModules.has(mod.id);
+            const checkbox = document.getElementById(`checkbox-${mod.id}`);
+            const statusLabel = document.getElementById(`status-${mod.id}`);
+            
+            if (checkbox) {
+                checkbox.checked = isChecked;
+            }
+            if (statusLabel) {
+                statusLabel.textContent = isChecked ? 'Active' : 'Minimized';
+            }
+        });
+    }
+
+    // --- Drawer Visibility Controls ---
+    function openDrawer() {
+        moduleDrawer.classList.add('open');
+        drawerOverlay.classList.add('open');
+    }
+
+    function closeDrawer() {
+        moduleDrawer.classList.remove('open');
+        drawerOverlay.classList.remove('open');
+    }
+
+    btnToggleDrawer.addEventListener('click', openDrawer);
+    btnCloseDrawer.addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+    
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && moduleDrawer.classList.contains('open')) {
+            closeDrawer();
+        }
+    });
 
 
     function minimizeModule(id) {
@@ -278,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('minimizing');
                 minimizedModules.add(id);
                 saveMinimizedState();
-                renderRestoreDock();
+                syncTogglesState();
                 updateGridColumns();
             });
         }, 300); // matches CSS transition duration
@@ -293,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.classList.add('minimizing'); // starts small / scale(0.6)
             minimizedModules.delete(id);
             saveMinimizedState();
-            renderRestoreDock();
+            syncTogglesState();
             updateGridColumns();
         });
         
@@ -334,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.classList.remove('hidden', 'minimizing');
             });
 
-            renderRestoreDock();
+            syncTogglesState();
             updateGridColumns();
         });
     });
@@ -425,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initial setup loads
-    renderRestoreDock();
+    buildToggleList();
     updateGridColumns();
     initParticles();
 });
