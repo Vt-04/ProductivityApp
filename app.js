@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('main-grid');
     const moduleDrawer = document.getElementById('module-drawer');
     const drawerOverlay = document.getElementById('drawer-overlay');
+    const focusOverlay = document.getElementById('focus-overlay');
     const btnToggleDrawer = document.getElementById('btn-toggle-drawer');
     const btnCloseDrawer = document.getElementById('btn-close-drawer');
     const moduleToggleList = document.getElementById('module-toggle-list');
@@ -133,23 +134,25 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(savedTheme);
 
 
-    // --- FLIP Transition Helper ---
+    // --- FLIP Transition Helper (Upgraded to support 2D scale transitions) ---
     function executeWithTransition(actionFn) {
         // 1. Get initial positions of all visible cards
         const items = [...grid.querySelectorAll('.module-card')];
         const firstRects = new Map();
         items.forEach(item => {
             if (item.style.display !== 'none') {
-                // Temporarily disable transform/transition to get true layout position
                 const savedTransition = item.style.transition;
                 const savedTransform = item.style.transform;
+                const savedOrigin = item.style.transformOrigin;
                 item.style.transition = 'none';
                 item.style.transform = 'none';
+                item.style.transformOrigin = 'none';
                 
                 firstRects.set(item.id, item.getBoundingClientRect());
                 
                 item.style.transition = savedTransition;
                 item.style.transform = savedTransform;
+                item.style.transformOrigin = savedOrigin;
             }
         });
 
@@ -160,20 +163,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastRects = new Map();
         items.forEach(item => {
             if (item.style.display !== 'none') {
-                // Temporarily disable transform/transition to get true layout position
                 const savedTransition = item.style.transition;
                 const savedTransform = item.style.transform;
+                const savedOrigin = item.style.transformOrigin;
                 item.style.transition = 'none';
                 item.style.transform = 'none';
+                item.style.transformOrigin = 'none';
                 
                 lastRects.set(item.id, item.getBoundingClientRect());
                 
                 item.style.transition = savedTransition;
                 item.style.transform = savedTransform;
+                item.style.transformOrigin = savedOrigin;
             }
         });
 
-        // 4. Invert and play
+        // 4. Invert and play (supporting 2D scaling)
         items.forEach(item => {
             if (item.style.display === 'none') return;
             const key = item.id;
@@ -183,16 +188,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (first && last) {
                 const deltaX = first.left - last.left;
                 const deltaY = first.top - last.top;
+                const scaleX = first.width / last.width;
+                const scaleY = first.height / last.height;
 
-                if (deltaX !== 0 || deltaY !== 0) {
+                if (deltaX !== 0 || deltaY !== 0 || scaleX !== 1 || scaleY !== 1) {
                     item.style.transition = 'none';
-                    item.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    item.style.transformOrigin = 'top left';
+                    item.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
 
                     // Force reflow
                     item.offsetHeight;
 
-                    item.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                    item.style.transform = 'translate(0, 0)';
+                    item.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
+                    item.style.transform = 'translate(0, 0) scale(1, 1)';
 
                     // Clear inline transitions safely preventing overlapping timer conflicts
                     if (item._flipTimeout) {
@@ -201,7 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     item._flipTimeout = setTimeout(() => {
                         item.style.transition = '';
                         item.style.transform = '';
+                        item.style.transformOrigin = '';
                         item._flipTimeout = null;
+                        
+                        // Force redraws of components like Canvas so charts render sharp
+                        if (key === 'analytics') {
+                            window.dispatchEvent(new Event('resize'));
+                        }
                     }, 400);
                 }
             }
@@ -312,8 +326,68 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && moduleDrawer.classList.contains('open')) {
-            closeDrawer();
+        if (e.key === 'Escape') {
+            if (moduleDrawer.classList.contains('open')) {
+                closeDrawer();
+            }
+            const activeFocused = document.querySelector('.module-card.focused');
+            if (activeFocused) {
+                const target = activeFocused.getAttribute('data-id') || activeFocused.id.split('-')[0];
+                toggleFocusModule(target);
+            }
+        }
+    });
+
+    // --- Focus Mode Controls ---
+    function toggleFocusModule(id) {
+        const card = document.getElementById(`${id}-module`);
+        if (!card) return;
+        
+        const isCurrentlyFocused = card.classList.contains('focused');
+        
+        executeWithTransition(() => {
+            if (isCurrentlyFocused) {
+                card.classList.remove('focused');
+                focusOverlay.classList.remove('open');
+                
+                const icon = card.querySelector('.focus-btn i');
+                if (icon) {
+                    icon.className = 'fa-solid fa-expand';
+                }
+            } else {
+                // De-focus any other card that might be open first
+                document.querySelectorAll('.module-card.focused').forEach(focusedCard => {
+                    focusedCard.classList.remove('focused');
+                    const icon = focusedCard.querySelector('.focus-btn i');
+                    if (icon) icon.className = 'fa-solid fa-expand';
+                });
+                
+                card.classList.add('focused');
+                focusOverlay.classList.add('open');
+                
+                const icon = card.querySelector('.focus-btn i');
+                if (icon) {
+                    icon.className = 'fa-solid fa-compress';
+                }
+            }
+        });
+    }
+
+    // Bind Focus buttons
+    document.querySelectorAll('.focus-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const target = btn.getAttribute('data-target');
+            toggleFocusModule(target);
+        });
+    });
+
+    // Close focus overlay on click
+    focusOverlay.addEventListener('click', () => {
+        const activeFocused = document.querySelector('.module-card.focused');
+        if (activeFocused) {
+            const target = activeFocused.getAttribute('data-id') || activeFocused.id.split('-')[0];
+            toggleFocusModule(target);
         }
     });
 
@@ -379,11 +453,14 @@ document.addEventListener('DOMContentLoaded', () => {
             minimizedModules.clear();
             applyTheme('sapphire');
             
-            // Reset all card visibilities
+            // Reset all card visibilities and focus states
             document.querySelectorAll('.module-card').forEach(card => {
                 card.style.display = 'flex';
-                card.classList.remove('hidden', 'minimizing');
+                card.classList.remove('hidden', 'minimizing', 'focused');
+                const icon = card.querySelector('.focus-btn i');
+                if (icon) icon.className = 'fa-solid fa-expand';
             });
+            focusOverlay.classList.remove('open');
 
             syncTogglesState();
             updateGridColumns();

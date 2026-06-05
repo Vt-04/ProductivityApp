@@ -633,6 +633,21 @@ body {
     margin-left: 0.25rem;
 }
 
+.focus-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: 0.25rem;
+    font-size: 1rem;
+    transition: color var(--transition-fast), transform var(--transition-fast);
+}
+.focus-btn:hover {
+    color: var(--text-main);
+    transform: scale(1.1);
+}
+
 .minimize-btn {
     background: transparent;
     border: none;
@@ -1566,6 +1581,79 @@ body {
 .spotify-input-row .input-field {
     flex-grow: 1;
     padding: 0.6rem;
+}
+
+/* --- Focus Overlay --- */
+.focus-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.focus-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* --- Focused Card Dimensions --- */
+.module-card.focused {
+    position: fixed;
+    top: calc(50% - 350px);
+    left: calc(50% - 500px);
+    width: 1000px;
+    height: 700px;
+    max-height: calc(100vh - 6rem);
+    max-width: calc(100vw - 4rem);
+    min-height: 0;
+    z-index: 999;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    background: hsla(223, 40%, 6%, 0.85);
+}
+
+/* Hide minimize button while card is focused */
+.module-card.focused .minimize-btn {
+    display: none;
+}
+
+/* Adjust contents inside focused card */
+.module-card.focused .scratchpad-textarea {
+    min-height: 480px;
+}
+
+.module-card.focused .task-list {
+    min-height: 380px;
+}
+
+.module-card.focused .calc-container {
+    height: 100%;
+    justify-content: center;
+}
+
+/* Responsive fallback under 1100px */
+@media (max-width: 1100px) {
+    .module-card.focused {
+        top: 2rem;
+        left: 2rem;
+        width: calc(100vw - 4rem);
+        height: calc(100vh - 4rem);
+        max-height: 100%;
+        max-width: 100%;
+    }
+    .module-card.focused .scratchpad-textarea {
+        min-height: calc(100vh - 200px);
+    }
+    .module-card.focused .task-list {
+        min-height: calc(100vh - 260px);
+    }
 }
 
 
