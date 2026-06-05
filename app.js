@@ -137,7 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstRects = new Map();
         items.forEach(item => {
             if (item.style.display !== 'none') {
+                // Temporarily disable transform/transition to get true layout position
+                const savedTransition = item.style.transition;
+                const savedTransform = item.style.transform;
+                item.style.transition = 'none';
+                item.style.transform = 'none';
+                
                 firstRects.set(item.id, item.getBoundingClientRect());
+                
+                item.style.transition = savedTransition;
+                item.style.transform = savedTransform;
             }
         });
 
@@ -148,7 +157,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const lastRects = new Map();
         items.forEach(item => {
             if (item.style.display !== 'none') {
+                // Temporarily disable transform/transition to get true layout position
+                const savedTransition = item.style.transition;
+                const savedTransform = item.style.transform;
+                item.style.transition = 'none';
+                item.style.transform = 'none';
+                
                 lastRects.set(item.id, item.getBoundingClientRect());
+                
+                item.style.transition = savedTransition;
+                item.style.transform = savedTransform;
             }
         });
 
@@ -323,27 +341,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Enable HTML5 Drag & Drop
     const cards = grid.querySelectorAll('.module-card');
+    let isDraggingFromHandle = false;
+
+    // Track mousedown on handles to distinguish valid drag starts
+    grid.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.drag-handle')) {
+            isDraggingFromHandle = true;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDraggingFromHandle = false;
+    });
     
     cards.forEach(card => {
-        // Prevent dragging unless holding the drag handle
-        const handle = card.querySelector('.drag-handle');
-        
-        handle.addEventListener('mousedown', () => {
-            card.setAttribute('draggable', 'true');
-        });
-        
-        handle.addEventListener('mouseup', () => {
-            card.setAttribute('draggable', 'false');
-        });
-
         card.addEventListener('dragstart', (e) => {
+            // Cancel drag start if it did not originate from the handle
+            if (!isDraggingFromHandle) {
+                e.preventDefault();
+                return;
+            }
             card.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
         });
 
         card.addEventListener('dragend', () => {
             card.classList.remove('dragging');
-            card.setAttribute('draggable', 'false');
+            isDraggingFromHandle = false;
             saveLayoutOrder();
         });
     });
